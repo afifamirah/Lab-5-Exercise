@@ -1,30 +1,72 @@
 ---
-title: "Hello World"
+title: "tidyverse and ggplot"
 author: "Afif Amirah"
 date: "2/9/2022"
-output: html_document
+output: 
+  html_document :
+    number_sections : yes
+    theme : cerulean
+    highlight : kate
+    toc : yes
+    toc_float :
+      collapsed: true
+      smooth_scroll: true
+  word_document :
+    toc : yes
+  pdf_document :
+    toc : yes
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(
+	message = FALSE,
+	warning = FALSE,
+	include = FALSE
+)
+library(tidyverse)
+library(readr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
 ```
 
-## R Markdown
+## Import Data
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+We will be looking at a data frame called 'democracy_data' and how to go about wrangling the data set into digestable information. Data source website <https://moderndive.com/data/dem_score.csv>.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+First step, we are going to properly filter the data to focus on information we want to look at, say we only want to look at democracy scores for country = "Guatemala" :
 
-```{r cars}
-summary(cars)
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+democracy_data <- read_csv("https://moderndive.com/data/dem_score.csv",show_col_types = FALSE)
+guatemala_demo <- democracy_data %>% 
+  filter(country == "Guatemala")
+as.data.frame(guatemala_demo)
+
+```
+## Tidy Data
+
+Next, we want to be able to convert the above data frame into 'tidy' format, which means each variable forms a column, each observation forms a row and each observational unit forms a table. Let's see how we can do this transformation :
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+guat_tidy <- gather(data = guatemala_demo, 
+                    key = year,
+                    value = democracy_score,
+                    - country) 
+guat_tidy
 ```
 
-## Including Plots
+Now we can see what the 'gather()' function does to the initial data frame is that it converts the years data from multiple columns into one column and corresponds to it is the democracy scores. This 'tidy' format now is nicer to look at.
 
-You can also embed plots, for example:
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+## Plots
+
+We can now create a decent graph to represent the data frame above :
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+ggplot(data=guat_tidy, mapping = aes (x=parse_number(year),
+                                            y = democracy_score)) +
+  geom_line() + labs(x="year",y="democracy_score", title = "Democracy Scores in Guatemala")
+
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
